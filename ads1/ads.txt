@@ -1,0 +1,77 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct Edge {
+    int u, v, weight;
+    bool operator<(Edge const& other) {
+        return weight < other.weight;
+    }
+};
+
+class DisjointSet {
+    vector<int> parent, rank;
+
+public:
+    DisjointSet(int n) {
+        parent.resize(n);
+        rank.resize(n, 0);
+        for (int i = 0; i < n; ++i)
+            parent[i] = i;
+    }
+
+    int find(int x) {
+        if (parent[x] != x)
+            parent[x] = find(parent[x]); // Path compression
+        return parent[x];
+    }
+
+    bool union_sets(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a == b) return false;
+
+        if (rank[a] < rank[b])
+            swap(a, b);
+        parent[b] = a;
+        if (rank[a] == rank[b])
+            rank[a]++;
+        return true;
+    }
+};
+
+int main() {
+    int n, e;
+    cout << "Enter number of vertices and edges: ";
+    cin >> n >> e;
+
+    vector<Edge> edges(e);
+
+    cout << "Enter edges (u v weight):\n";
+    for (int i = 0; i < e; ++i)
+        cin >> edges[i].u >> edges[i].v >> edges[i].weight;
+
+    sort(edges.begin(), edges.end());
+
+    DisjointSet ds(n);
+
+    int mst_weight = 0;
+    vector<Edge> mst;
+
+    for (Edge edge : edges) {
+        if (ds.union_sets(edge.u, edge.v)) {
+            mst.push_back(edge);
+            mst_weight += edge.weight;
+        }
+    }
+
+    cout << "Minimum Spanning Tree edges:\n";
+    for (Edge edge : mst)
+        cout << edge.u << " - " << edge.v << " : " << edge.weight << "\n";
+
+    cout << "Total weight of MST: " << mst_weight << "\n";
+
+    return 0;
+}
